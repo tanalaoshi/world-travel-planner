@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Travel Planner | 世界旅行計畫</title>
+  <!-- Include html2canvas for saving step 11 as an image -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --primary-light: #e8f5e9;
+      --accent: #ff9800;
+      --bg: #f4f6f8;
+      --card-bg: #ffffff;
+      --text: #2c3e50;
+      --gray: #cfd8dc;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; }
+    
+    .app-container {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 850px;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      position: relative;
+    }
+
+    /* Progress Bar */
+    .header { margin-bottom: 25px; }
+    .title-row { display: flex; justify-content: space-between; align-items: center; }
+    .title-row h1 { font-size: 1.5rem; margin: 0; color: #1b5e20; }
+    .progress-bar-bg { background: #e0e0e0; height: 12px; border-radius: 6px; margin-top: 15px; overflow: hidden; }
+    .progress-bar-fill { background: var(--primary); height: 100%; width: 9%; transition: width 0.3s ease; }
+
+    /* Page Visibility */
+    .step-page { display: none; }
+    .step-page.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Visual Selection Cards */
+    .grid-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
+    .card-option {
+      border: 3px solid var(--gray);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #fff;
+    }
+    .card-option:hover { transform: translateY(-3px); border-color: var(--primary); }
+    .card-option.selected { border-color: var(--primary); background-color: var(--primary-light); font-weight: bold; }
+    .card-option .en { font-size: 1.1rem; display: block; color: #111; }
+    .card-option .zh { font-size: 0.9rem; color: #666; margin-top: 4px; display: block; }
+
+    /* Dynamic Form Styling */
+    .traveler-box {
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: #fafafa;
+    }
+    .traveler-box h3 { margin-top: 0; color: var(--primary); }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-top: 5px;
+      outline: none;
+    }
+    select:focus, input:focus { border-color: var(--primary); }
+    .airport-hint { font-size: 0.85rem; color: #555; background: #e3f2fd; padding: 8px 12px; border-radius: 6px; margin-top: 8px; }
+
+    /* Navigation Buttons */
+    .nav-buttons { display: flex; justify-content: space-between; margin-top: 30px; }
+    .btn {
+      padding: 12px 28px;
+      border-radius: 30px;
+      border: none;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-back { background: #e0e0e0; color: #333; }
+    .btn-next { background: var(--primary); color: #fff; }
+    .btn-next:hover { background: #1b5e20; }
+    .btn-download { background: #ff9800; color: #fff; margin-bottom: 15px; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-download:hover { background: #f57c00; }
+
+    /* Results Gauge & Submission Card */
+    .banner-win { background: #fff8e1; border: 2px dashed var(--accent); padding: 15px; border-radius: 12px; text-align: center; font-size: 1.2rem; }
+    .budget-status { font-size: 1.1rem; font-weight: bold; padding: 10px; border-radius: 8px; text-align: center; }
+    .status-pass { background: #d4edda; color: #155724; }
+    .status-fail { background: #f8d7da; color: #721c24; }
+
+    /* Landscape Presentation Slide Design (Step 11) */
+    .presentation-slide {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, #f9fbfd 0%, #edf2f7 100%);
+      border: 4px solid var(--primary);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #cbd5e1;
+      padding-bottom: 8px;
+    }
+    .slide-header h2 { margin: 0; font-size: 1.3rem; color: #1b5e20; }
+    .slide-badges { display: flex; gap: 8px; font-size: 0.8rem; font-weight: bold; }
+    .slide-badge { background: #e2e8f0; padding: 4px 8px; border-radius: 6px; color: #334155; }
+    
+    .slide-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 8px 0;
+    }
+    .slide-card {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 10px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .slide-card h4 { margin: 0 0 6px 0; font-size: 0.9rem; color: #2e7d32; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
+    .slide-card-content { font-size: 0.8rem; color: #475569; line-height: 1.3; }
+
+    .slide-footer {
+      background: #e8f5e9;
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #c8e6c9;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="header">
+    <div class="title-row">
+      <h1>✈️ World Travel Planner <span style="font-size:1rem; font-weight:normal;">世界旅行計畫</span></h1>
+      <span id="step-indicator" style="font-weight: bold; color: #666;">Step 1 of 11</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div id="progress-fill" class="progress-bar-fill"></div>
+    </div>
+  </div>
+
+  <!-- STEP 1: Class & Group Setup -->
+  <div class="step-page active" id="step-1">
+    <h2>🏫 Class & Group Setup / 班級與組別設定</h2>
+    <p style="color:#666;">Please select your class and group number before starting! / 開始前請選擇您的班級與組別！</p>
+    <div style="margin-top:20px;">
+      <label><b>Select Class / 選擇班級:</b></label>
+      <select id="setup-class">
+        <option value="501">501</option>
+        <option value="502">502</option>
+        <option value="503">503</option>
+        <option value="504">504</option>
+        <option value="TOS">TOS</option>
+      </select>
+    </div>
+    <div style="margin-top:20px;">
+      <label><b>Select Group / 選擇組別 (1-13):</b></label>
+      <select id="setup-group">
+        <option value="1">Group 1</option>
+        <option value="2">Group 2</option>
+        <option value="3">Group 3</option>
+        <option value="4">Group 4</option>
+        <option value="5">Group 5</option>
+        <option value="6">Group 6</option>
+        <option value="7">Group 7</option>
+        <option value="8">Group 8</option>
+        <option value="9">Group 9</option>
+        <option value="10">Group 10</option>
+        <option value="11">Group 11</option>
+        <option value="12">Group 12</option>
+        <option value="13">Group 13</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- STEP 2: Trip Style & Budget Goal -->
+  <div class="step-page" id="step-2">
+    <h2>Choose your trip style / 選擇旅行風格 (預算)</h2>
+    <div class="grid-options">
+      <div class="card-option" onclick="selectTripStyle(45000, 'Backpacker Challenge / 背包客挑戰', this)">
+        <span style="font-size: 40px;">🎒</span>
+        <span class="en">Backpacker Challenge</span>
+        <span class="zh">背包客挑戰 ($45,000 NTD/person)</span>
+      </div>
+      <div class="card-option" onclick="selectTripStyle(60000, 'Balanced Traveler / 標準旅遊', this)">
+        <span style="font-size: 40px;">🧳</span>
+        <span class="en">Balanced Traveler</span>
+        <span class="zh">標準旅遊 ($60,000 NTD/person)</span>
+      </div>
+      <div class="card-option" onclick="selectTripStyle(80000, 'Luxury Explorer / 尊爵豪華行', this)">
+        <span style="font-size: 40px;">🌟</span>
+        <span class="en">Luxury Explorer</span>
+        <span class="zh">尊爵豪華行 ($80,000 NTD/person)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Continent Choice -->
+  <div class="step-page" id="step-3">
+    <h2>Where do you want to travel? / 你想去哪一洲？</h2>
+    <div class="grid-options">
+      <div class="card-option" onclick="selectContinent('Africa', '🐘', this)">
+        <span style="font-size: 40px;">🐘</span>
+        <span class="en">Africa</span><span class="zh">非洲</span>
+      </div>
+      <div class="card-option" onclick="selectContinent('Asia', '🏯', this)">
+        <span style="font-size: 40px;">🏯</span>
+        <span class="en">Asia</span><span class="zh">亞洲</span>
+      </div>
+      <div class="card-option" onclick="selectContinent('Europe', '🏰', this)">
+        <span style="font-size: 40px;">🏰</span>
+        <span class="en">Europe</span><span class="zh">歐洲</span>
+      </div>
+      <div class="card-option" onclick="selectContinent('North America', '🗽', this)">
+        <span style="font-size: 40px;">🗽</span>
+        <span class="en">North America</span><span class="zh">北美洲</span>
+      </div>
+      <div class="card-option" onclick="selectContinent('Oceania', '🐨', this)">
+        <span style="font-size: 40px;">🐨</span>
+        <span class="en">Oceania</span><span class="zh">大洋洲</span>
+      </div>
+      <div class="card-option" onclick="selectContinent('South America', '🦙', this)">
+        <span style="font-size: 40px;">🦙</span>
+        <span class="en">South America</span><span class="zh">南美洲</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Partner Count & English First Names -->
+  <div class="step-page" id="step-4">
+    <h2>How many partners & First Names? / 夥伴人數與英文名字</h2>
+    <div class="grid-options">
+      <div class="card-option" onclick="selectTravelers(2, this)">
+        <span style="font-size: 40px;">👯</span>
+        <span class="en">2 Partners (A & B)</span><span class="zh">2 位夥伴 (A & B)</span>
+      </div>
+      <div class="card-option" onclick="selectTravelers(3, this)">
+        <span style="font-size: 40px;">👨‍👦‍👦</span>
+        <span class="en">3 Partners (A, B & C)</span><span class="zh">3 位夥伴 (A, B & C)</span>
+      </div>
+    </div>
+    <div id="partner-inputs-container" style="margin-top:20px;"></div>
+    <div style="margin-top:20px;">
+      <label><b>Trip Duration / 旅行天數:</b></label>
+      <input type="number" id="trip-days" value="7" min="1" max="30">
+    </div>
+  </div>
+
+  <!-- STEP 5: Select Destinations (Numbers & Names Only) -->
+  <div class="step-page" id="step-5">
+    <h2>Choose top destinations / 選擇主要目的地</h2>
+    <p style="color:#666;">Each partner must choose a different spot! / 每位夥伴必須選擇不同的景點！</p>
+    <div id="destinations-container"></div>
+  </div>
+
+  <!-- STEP 6: Airfare Inputs -->
+  <div class="step-page" id="step-6">
+    <h2>Enter Airfare / 輸入機票價格 (NTD)</h2>
+    <p style="color:#666;">Use the suggested airport codes below to search real airfares! / 使用下方推薦的機場代碼查詢機票！</p>
+    <div id="airfare-inputs-container"></div>
+  </div>
+
+  <!-- STEP 7: Winning Airfare -->
+  <div class="step-page" id="step-7">
+    <h2>Winning Airfare Announcement / 最優惠機票價格</h2>
+    <div class="banner-win">
+      🎉 Lowest Airfare Found / 最佳價格: <br>
+      <strong id="winning-fare-display" style="font-size: 2rem; color: var(--accent);">$0</strong> NTD / person
+    </div>
+    <p style="margin-top:20px; text-align:center;">
+      Total Airfare for group / 機票總額: <b id="total-airfare-display">$0</b> NTD
+    </p>
+  </div>
+
+  <!-- STEP 8: Custom Wildcard Destination -->
+  <div class="step-page" id="step-8">
+    <h2>Secret Destinations / 私房景點</h2>
+    <p style="color:#666;">Each partner can type 1 unique destination not on the list! / 每人寫下一個不在清單上的私房景點！</p>
+    <div id="custom-destinations-container"></div>
+  </div>
+
+  <!-- STEP 9: Transportation Budget -->
+  <div class="step-page" id="step-9">
+    <h2>Transportation Estimate / 交通預算估計</h2>
+    <div style="background:#e8eaf6; padding:20px; border-radius:12px;">
+      <p>Base inter-city transport / 跨城/洲內交通費: <b id="trans-base-display">$0</b> NTD / person</p>
+      <p>Doubled for secret spots / 含私房景點加倍計: <b id="trans-secret-display">$0</b> NTD / person</p>
+      <p>Local daily transit ($500 × days) / 當地每日市區交通: <b id="trans-local-display">$0</b> NTD / person</p>
+      <hr>
+      <h3>Group Transportation Total / 交通費用總計: <span id="trans-total-display" style="color:var(--primary);">$0</span> NTD</h3>
+    </div>
+  </div>
+
+  <!-- STEP 10: Stay, Food & Final Calculation -->
+  <div class="step-page" id="step-10">
+    <h2>Stay, Food & Budget Check / 住宿、飲食與總預算</h2>
+    
+    <h3>1. Place to Stay / 住宿選擇 (Per night / 每晚)</h3>
+    <select id="stay-option">
+      <option value="2000" data-label="🏨 Hotel / 飯店 ($2,000 NTD)">Hotel / 飯店 ($2,000 NTD)</option>
+      <option value="600" data-label="🛏️ Shared Room / 青旅合宿 ($600 NTD)">Shared Room / 青旅合宿 ($600 NTD)</option>
+      <option value="0" data-label="⛺ Work Stay / 打工換宿 ($0 NTD)">Work Stay / 打工換宿 ($0 NTD)</option>
+    </select>
+
+    <h3 style="margin-top:20px;">2. Food & Drink / 飲食選擇 (Per person / per day 每日每人)</h3>
+    <select id="food-option">
+      <option value="500" data-label="🥪 Budget / 省錢首選 ($500 NTD)">Budget / 省錢首選 ($500 NTD)</option>
+      <option value="1000" data-label="🍜 Comfortable / 舒適享受 ($1,000 NTD)" selected>Comfortable / 舒適享受 ($1,000 NTD)</option>
+      <option value="1500" data-label="🍽️ Treat Yourself / 奢華大餐 ($1,500 NTD)">Treat Yourself / 奢華大餐 ($1,500 NTD)</option>
+    </select>
+
+    <button class="btn btn-next" style="width:100%; margin-top:25px;" onclick="calculateFinalBudget(); changeStep(1);">Calculate & Review Presentation / 計算並生成簡報</button>
+  </div>
+
+  <!-- STEP 11: Presentation Slide View -->
+  <div class="step-page" id="step-11">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h2 style="margin:0;">📊 Presentation Slide / 簡報發表頁</h2>
+      <button class="btn btn-download" onclick="saveImageAndSubmit()">💾 Save Slide & Submit Data / 儲存圖片並繳交</button>
+    </div>
+
+    <!-- Landscape 16:9 Slide Container for Capture -->
+    <div class="presentation-slide" id="capture-slide">
+      <div class="slide-header">
+        <div>
+          <h2><span id="slide-class-group-header">Class 501 | Group 1</span> ✈️ World Travel Plan</h2>
+          <span style="font-size:0.75rem; color:#64748b;">世界旅行計畫成果發表</span>
+        </div>
+        <div class="slide-badges">
+          <span class="slide-badge" id="slide-style-badge">🎒 Style</span>
+          <span class="slide-badge" id="slide-continent-badge">🌏 Continent</span>
+          <span class="slide-badge" id="slide-days-badge">📅 7 Days</span>
+        </div>
+      </div>
+
+      <div class="slide-body">
+        <div class="slide-card">
+          <h4>📍 Destinations & Airfares / 景點與機票</h4>
+          <div class="slide-card-content" id="slide-destinations-list"></div>
+        </div>
+
+        <div class="slide-card">
+          <h4>🔮 Secret Spots & Logistics / 私房景點與生活</h4>
+          <div class="slide-card-content">
+            <div id="slide-secrets-list" style="margin-bottom: 4px;"></div>
+            <div>• <b>Stay:</b> <span id="slide-stay"></span></div>
+            <div>• <b>Meals:</b> <span id="slide-food"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div>
+          <span style="font-size:0.8rem; color:#334155;">Allowed Budget: <b id="slide-budget-limit">$0</b></span>
+          <span style="font-size:0.8rem; color:#334155; margin-left: 10px;">Total Cost: <b id="slide-grand-total" style="color:#1b5e20;">$0</b></span>
+        </div>
+        <div id="slide-status-box" style="font-size: 0.8rem; font-weight: bold; padding: 3px 8px; border-radius: 6px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Controls -->
+  <div class="nav-buttons">
+    <button class="btn btn-back" id="btn-back" onclick="changeStep(-1)" style="visibility:hidden;">← Back / 上一步</button>
+    <button class="btn btn-next" id="btn-next" onclick="changeStep(1)">Next / 下一步 →</button>
+  </div>
+</div>
+
+<script>
+  let travelerCount = 2;
+  let continentEmoji = '🌏';
+
+  // Destination database containing only numbers, names, and hub airports
+  const destinationData = {
+    "Africa": [
+      { num: 1, name: "Boulders Beach", hub: "Cape Town Int'l (CPT), South Africa" },
+      { num: 2, name: "Pelican Point", hub: "Hosea Kutako Int'l (WDH), Namibia" },
+      { num: 3, name: "Anse Source d'Argent", hub: "Seychelles Int'l (SEZ), Seychelles" },
+      { num: 4, name: "Kilimanjaro", hub: "Kilimanjaro Int'l (JRO), Tanzania" },
+      { num: 5, name: "Ngorongoro Crater", hub: "Kilimanjaro Int'l (JRO), Tanzania" },
+      { num: 6, name: "Pyramids of Giza", hub: "Cairo Int'l (CAI), Egypt" },
+      { num: 7, name: "Victoria Falls", hub: "Harry Mwanga Nkumbula Int'l (LVI), Zambia" },
+      { num: 8, name: "Sahara Desert", hub: "Marrakesh Menara (RAK), Morocco" },
+      { num: 9, name: "Avenue of Baobabs", hub: "Ivato Int'l (TNR), Madagascar" },
+      { num: 10, name: "Bwindi Forest", hub: "Entebbe Int'l (EBB), Uganda" }
+    ],
+    "Asia": [
+      { num: 1, name: "Great Wall of China", hub: "Beijing Capital Int'l (PEK), China" },
+      { num: 2, name: "Taj Mahal", hub: "Indira Gandhi Int'l (DEL), India" },
+      { num: 3, name: "Mount Fuji", hub: "Haneda Airport (HND), Tokyo, Japan" },
+      { num: 4, name: "Angkor Wat", hub: "Siem Reap–Angkor Int'l (SAI), Cambodia" },
+      { num: 5, name: "Petra", hub: "Queen Alia Int'l (AMM), Amman, Jordan" },
+      { num: 6, name: "Zhangjiajie Forest", hub: "Changsha Huanghua Int'l (CSX), China" },
+      { num: 7, name: "Ha Long Bay", hub: "Noi Bai Int'l (HAN), Hanoi, Vietnam" },
+      { num: 8, name: "Burj Khalifa", hub: "Dubai Int'l (DXB), UAE" },
+      { num: 9, name: "Mount Everest", hub: "Tribhuvan Int'l (KTM), Nepal" },
+      { num: 10, name: "Son Doong Cave", hub: "Noi Bai Int'l (HAN), Hanoi, Vietnam" }
+    ],
+    "Europe": [
+      { num: 1, name: "Eiffel Tower", hub: "Paris Charles de Gaulle (CDG), France" },
+      { num: 2, name: "Colosseum", hub: "Leonardo da Vinci–Fiumicino (FCO), Rome, Italy" },
+      { num: 3, name: "Lapland Northern Lights", hub: "Helsinki Airport (HEL), Finland" },
+      { num: 4, name: "Sagrada Familia", hub: "Barcelona–El Prat (BCN), Spain" },
+      { num: 5, name: "Stonehenge", hub: "London Heathrow (LHR), UK" },
+      { num: 6, name: "Plitvice Lakes", hub: "Zagreb Airport (ZAG), Croatia" },
+      { num: 7, name: "Matterhorn", hub: "Zurich Airport (ZRH), Switzerland" },
+      { num: 8, name: "Venice Canals", hub: "Venice Marco Polo (VCE), Italy" },
+      { num: 9, name: "Neuschwanstein Castle", hub: "Munich Airport (MUC), Germany" },
+      { num: 10, name: "Eisriesenwelt Ice Cave", hub: "Salzburg Airport (SZG), Austria" }
+    ],
+    "North America": [
+      { num: 1, name: "Grand Canyon", hub: "Phoenix Sky Harbor Int'l (PHX), USA" },
+      { num: 2, name: "Chichén Itzá", hub: "Cancún Int'l (CUN), Mexico" },
+      { num: 3, name: "Niagara Falls", hub: "Toronto Pearson Int'l (YYZ), Canada" },
+      { num: 4, name: "Yellowstone", hub: "Salt Lake City Int'l (SLC), USA" },
+      { num: 5, name: "Banff National Park", hub: "Calgary Int'l (YYC), Canada" },
+      { num: 6, name: "Statue of Liberty", hub: "JFK Int'l, New York, USA" },
+      { num: 7, name: "Monarch Butterfly Reserve", hub: "Mexico City Int'l (MEX), Mexico" },
+      { num: 8, name: "Sacred Cenotes", hub: "Cancún Int'l (CUN), Mexico" },
+      { num: 9, name: "Bioluminescent Bay", hub: "Luis Muñoz Marín Int'l (SJU), Puerto Rico" },
+      { num: 10, name: "Redwood National Park", hub: "San Francisco Int'l (SFO), USA" }
+    ],
+    "Oceania": [
+      { num: 1, name: "Great Barrier Reef", hub: "Cairns Airport (CNS), Australia" },
+      { num: 2, name: "Rottnest Quokkas", hub: "Perth Airport (PER), Australia" },
+      { num: 3, name: "Tasmania Devil Sanctuaries", hub: "Hobart Airport (HBA), Australia" },
+      { num: 4, name: "Sydney Opera House", hub: "Sydney Kingsford Smith (SYD), Australia" },
+      { num: 5, name: "Milford Sound", hub: "Christchurch Int'l (CHC), New Zealand" },
+      { num: 6, name: "Waitomo Glowworm Caves", hub: "Auckland Airport (AKL), New Zealand" },
+      { num: 7, name: "Rotorua Geothermal Valley", hub: "Auckland Airport (AKL), New Zealand" },
+      { num: 8, name: "Bora Bora Lagoon", hub: "Faa'a Int'l (PPT), French Polynesia" },
+      { num: 9, name: "Moai of Easter Island", hub: "Santiago Int'l (SCL), Chile" },
+      { num: 10, name: "Jellyfish Lake", hub: "Palau Int'l (ROR), Palau" }
+    ],
+    "South America": [
+      { num: 1, name: "Machu Picchu", hub: "Jorge Chávez Int'l (LIM), Peru" },
+      { num: 2, name: "Amazon Rainforest", hub: "Eduardo Gomes Int'l (MAO), Brazil" },
+      { num: 3, name: "Angel Falls", hub: "Simón Bolívar Int'l (CCS), Venezuela" },
+      { num: 4, name: "Christ the Redeemer", hub: "Rio de Janeiro/Galeão (GIG), Brazil" },
+      { num: 5, name: "Salar de Uyuni", hub: "El Alto Int'l (LPB), La Paz, Bolivia" },
+      { num: 6, name: "Galápagos Islands", hub: "Mariscal Sucre Int'l (UIO), Ecuador" },
+      { num: 7, name: "Huacachina Oasis", hub: "Jorge Chávez Int'l (LIM), Peru" },
+      { num: 8, name: "Torres del Paine", hub: "Santiago Int'l (SCL), Chile" },
+      { num: 9, name: "Cotopaxi Volcano", hub: "Mariscal Sucre Int'l (UIO), Ecuador" },
+      { num: 10, name: "Perito Moreno Glacier", hub: "Buenos Aires Int'l (EZE), Argentina" }
+    ]
+  };
+
+  // State
+  let currentStep = 1;
+  let budgetPerPerson = 60000;
+  let tripStyleLabel = "Balanced Traveler / 標準旅遊";
+  let selectedContinent = "";
+  let winningAirfare = 0;
+  let transCostPerPerson = 0;
+  let grandTotalVal = 0;
+  let isPassed = true;
+
+  function selectTripStyle(amount, label, el) {
+    budgetPerPerson = amount;
+    tripStyleLabel = label;
+    document.querySelectorAll('#step-2 .card-option').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function selectContinent(name, emoji, el) {
+    selectedContinent = name;
+    continentEmoji = emoji;
+    document.querySelectorAll('#step-3 .card-option').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function selectTravelers(count, el) {
+    travelerCount = count;
+    document.querySelectorAll('#step-4 .card-option').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    renderPartnerNameInputs();
+  }
+
+  function renderPartnerNameInputs() {
+    const container = document.getElementById('partner-inputs-container');
+    container.innerHTML = "<h4>Enter Partner First Names / 輸入夥伴英文名:</h4>";
+    const labels = ["Partner A", "Partner B", "Partner C"];
+    for (let i = 1; i <= travelerCount; i++) {
+      container.innerHTML += `
+        <div style="margin-bottom:10px;">
+          <label><b>${labels[i-1]} First Name:</b></label>
+          <input type="text" id="partner-name-${i}" placeholder="e.g. Leo, Mia, Alex" value="${labels[i-1]}">
+        </div>
+      `;
+    }
+  }
+
+  function getPartnerLabel(i) {
+    const nameInput = document.getElementById(`partner-name-${i}`);
+    const defaultLabels = ["Partner A", "Partner B", "Partner C"];
+    return nameInput && nameInput.value.trim() ? nameInput.value.trim() : defaultLabels[i-1];
+  }
+
+  function changeStep(dir) {
+    if (dir === 1 && !validateStep()) return;
+
+    currentStep += dir;
+    if (currentStep < 1) currentStep = 1;
+    if (currentStep > 11) currentStep = 11;
+
+    // Render step logic
+    if (currentStep === 4 && document.getElementById('partner-inputs-container').innerHTML === '') {
+      renderPartnerNameInputs();
+    }
+    if (currentStep === 5) renderStep5();
+    if (currentStep === 6) renderStep6();
+    if (currentStep === 7) renderStep7();
+    if (currentStep === 8) renderStep8();
+    if (currentStep === 9) renderStep9();
+
+    // UI Updates
+    document.querySelectorAll('.step-page').forEach((p, idx) => {
+      p.classList.toggle('active', idx + 1 === currentStep);
+    });
+
+    document.getElementById('step-indicator').innerText = `Step ${currentStep} of 11`;
+    document.getElementById('progress-fill').style.width = `${(currentStep / 11) * 100}%`;
+    document.getElementById('btn-back').style.visibility = currentStep === 1 ? 'hidden' : 'visible';
+    document.getElementById('btn-next').style.display = (currentStep === 10 || currentStep === 11) ? 'none' : 'inline-block';
+  }
+
+  function validateStep() {
+    if (currentStep === 2 && !budgetPerPerson) {
+      alert("Please select a trip style / 請選擇旅行風格！");
+      return false;
+    }
+    if (currentStep === 3 && !selectedContinent) {
+      alert("Please select a continent! / 請選擇一個洲！");
+      return false;
+    }
+    return true;
+  }
+
+  // Dynamic Step Renderers (Step 5 with numbers & names only)
+  function renderStep5() {
+    const container = document.getElementById('destinations-container');
+    container.innerHTML = "";
+    const list = destinationData[selectedContinent];
+
+    for (let i = 1; i <= travelerCount; i++) {
+      const pName = getPartnerLabel(i);
+      const box = document.createElement('div');
+      box.className = 'traveler-box';
+      box.innerHTML = `
+        <h3>📍 ${pName}</h3>
+        <select id="dest-t${i}" onchange="updateDropdownOptionsAndHint(${i})">
+          <option value="">-- Choose Destination --</option>
+          ${list.map(d => `<option value="${d.name}">(${d.num}) ${d.name}</option>`).join('')}
+        </select>
+        <div id="airport-info-t${i}" class="airport-hint" style="display:none;"></div>
+      `;
+      container.appendChild(box);
+    }
+  }
+
+  function updateDropdownOptionsAndHint(partnerIdx) {
+    const selectedVals = [];
+    for (let i = 1; i <= travelerCount; i++) {
+      const val = document.getElementById(`dest-t${i}`).value;
+      if (val) selectedVals.push(val);
+    }
+
+    const list = destinationData[selectedContinent];
+
+    for (let i = 1; i <= travelerCount; i++) {
+      const select = document.getElementById(`dest-t${i}`);
+      const currentVal = select.value;
+      
+      Array.from(select.options).forEach(opt => {
+        if (opt.value && opt.value !== currentVal) {
+          opt.disabled = selectedVals.includes(opt.value);
+        }
+      });
+
+      const hint = document.getElementById(`airport-info-t${i}`);
+      if (currentVal) {
+        const match = list.find(item => item.name === currentVal);
+        hint.style.display = 'block';
+        hint.innerHTML = `✈️ <b>Nearest Hub Airport:</b> ${match.hub}`;
+      } else {
+        hint.style.display = 'none';
+      }
+    }
+  }
+
+  function renderStep6() {
+    const container = document.getElementById('airfare-inputs-container');
+    container.innerHTML = "";
+    const list = destinationData[selectedContinent];
+
+    for (let i = 1; i <= travelerCount; i++) {
+      const pName = getPartnerLabel(i);
+      const selectedDestName = document.getElementById(`dest-t${i}`) ? document.getElementById(`dest-t${i}`).value : "";
+      const matchedSpot = list.find(item => item.name === selectedDestName);
+      const hubText = matchedSpot ? matchedSpot.hub : "Airport recommendation unavailable";
+
+      container.innerHTML += `
+        <div class="traveler-box">
+          <h3>✈️ ${pName} Airfare Quote</h3>
+          <p style="margin: 4px 0; color:#2e7d32; font-weight:bold;">📍 ${selectedDestName || 'Selected Destination'}</p>
+          <div class="airport-hint" style="margin-bottom:10px;">
+            <b>Target Airport:</b> ${hubText}
+          </div>
+          <input type="number" id="fare-t${i}" placeholder="Enter amount in NTD" value="25000">
+        </div>
+      `;
+    }
+  }
+
+  function renderStep7() {
+    let fares = [];
+    for (let i = 1; i <= travelerCount; i++) {
+      const val = parseFloat(document.getElementById(`fare-t${i}`).value) || 0;
+      fares.push(val);
+    }
+    winningAirfare = Math.min(...fares);
+    document.getElementById('winning-fare-display').innerText = `$${winningAirfare.toLocaleString()}`;
+    document.getElementById('total-airfare-display').innerText = `$${(winningAirfare * travelerCount).toLocaleString()}`;
+  }
+
+  function renderStep8() {
+    const container = document.getElementById('custom-destinations-container');
+    container.innerHTML = "";
+    for (let i = 1; i <= travelerCount; i++) {
+      const pName = getPartnerLabel(i);
+      container.innerHTML += `
+        <div class="traveler-box">
+          <h3>🔮 ${pName}'s Secret Spot</h3>
+          <input type="text" id="secret-t${i}" placeholder="e.g. Local market, Hidden beach..." value="Secret Beach">
+        </div>
+      `;
+    }
+  }
+
+  function renderStep9() {
+    const days = parseInt(document.getElementById('trip-days').value) || 7;
+    const vastContinents = ["North America", "South America", "Africa", "Oceania"];
+    const baseInterCityFee = vastContinents.includes(selectedContinent) ? 8000 : 5000;
+    const doubledInterCityFee = baseInterCityFee * 2;
+    const localDailyTransit = 500 * days;
+
+    transCostPerPerson = doubledInterCityFee + localDailyTransit;
+    const groupTransTotal = transCostPerPerson * travelerCount;
+
+    document.getElementById('trans-base-display').innerText = `$${baseInterCityFee.toLocaleString()}`;
+    document.getElementById('trans-secret-display').innerText = `$${doubledInterCityFee.toLocaleString()}`;
+    document.getElementById('trans-local-display').innerText = `$${localDailyTransit.toLocaleString()}`;
+    document.getElementById('trans-total-display').innerText = `$${groupTransTotal.toLocaleString()}`;
+  }
+
+  function calculateFinalBudget() {
+    const days = parseInt(document.getElementById('trip-days').value) || 7;
+    const staySelect = document.getElementById('stay-option');
+    const foodSelect = document.getElementById('food-option');
+
+    const stayCostPerNight = parseInt(staySelect.value);
+    const foodCostPerDay = parseInt(foodSelect.value);
+
+    const totalAirfare = winningAirfare * travelerCount;
+    const totalTrans = transCostPerPerson * travelerCount;
+    const totalStay = stayCostPerNight * (days - 1) * travelerCount; 
+    const totalFood = foodCostPerDay * days * travelerCount;
+
+    grandTotalVal = totalAirfare + totalTrans + totalStay + totalFood;
+    const totalBudgetAllowed = budgetPerPerson * travelerCount;
+
+    const classVal = document.getElementById('setup-class').value;
+    const groupVal = document.getElementById('setup-group').value;
+    const list = destinationData[selectedContinent] || [];
+
+    // Populate Slide View (Step 11)
+    document.getElementById('slide-class-group-header').innerText = `Class ${classVal} | Group ${groupVal}`;
+    document.getElementById('slide-style-badge').innerText = tripStyleLabel.includes('Backpacker') ? '🎒 Backpacker' : (tripStyleLabel.includes('Luxury') ? '🌟 Luxury' : '🧳 Balanced');
+    document.getElementById('slide-continent-badge').innerText = `${continentEmoji} ${selectedContinent}`;
+    document.getElementById('slide-days-badge').innerText = `📅 ${days} Days`;
+
+    // Destinations & Airfares list with numbers included
+    let destHtml = "";
+    for (let i = 1; i <= travelerCount; i++) {
+      const pName = getPartnerLabel(i);
+      const destName = document.getElementById(`dest-t${i}`) ? document.getElementById(`dest-t${i}`).value : 'N/A';
+      const matchObj = list.find(d => d.name === destName);
+      const destNumStr = matchObj ? `(${matchObj.num}) ` : '';
+      const fareVal = document.getElementById(`fare-t${i}`) ? document.getElementById(`fare-t${i}`).value : '0';
+      destHtml += `<div>• <b>${pName}:</b> ${destNumStr}${destName} ($${parseInt(fareVal).toLocaleString()})</div>`;
+    }
+    destHtml += `<div style="margin-top:4px; color:#2e7d32;">🏆 <b>Winning Fare Used:</b> $${winningAirfare.toLocaleString()} / person</div>`;
+    document.getElementById('slide-destinations-list').innerHTML = destHtml;
+
+    // Secrets list
+    let secretHtml = "";
+    for (let i = 1; i <= travelerCount; i++) {
+      const pName = getPartnerLabel(i);
+      const secretName = document.getElementById(`secret-t${i}`) ? document.getElementById(`secret-t${i}`).value : 'N/A';
+      secretHtml += `<div>• <b>${pName}:</b> ${secretName}</div>`;
+    }
+    document.getElementById('slide-secrets-list').innerHTML = secretHtml;
+
+    // Stay & Food options
+    document.getElementById('slide-stay').innerText = staySelect.options[staySelect.selectedIndex].getAttribute('data-label');
+    document.getElementById('slide-food').innerText = foodSelect.options[foodSelect.selectedIndex].getAttribute('data-label');
+
+    // Budget Results
+    document.getElementById('slide-budget-limit').innerText = `$${totalBudgetAllowed.toLocaleString()} NTD`;
+    document.getElementById('slide-grand-total').innerText = `$${grandTotalVal.toLocaleString()} NTD`;
+
+    const statusBox = document.getElementById('slide-status-box');
+    if (grandTotalVal <= totalBudgetAllowed) {
+      isPassed = true;
+      statusBox.className = "budget-status status-pass";
+      statusBox.innerHTML = `🎉 PASSED! Balance: $${(totalBudgetAllowed - grandTotalVal).toLocaleString()}`;
+    } else {
+      isPassed = false;
+      statusBox.className = "budget-status status-fail";
+      statusBox.innerHTML = `⚠️ OVER BUDGET by $${(grandTotalVal - totalBudgetAllowed).toLocaleString()}`;
+    }
+  }
+
+  // Function to save Step 11 Slide as image and submit data to Google Sheets
+  function saveImageAndSubmit() {
+    // 1. Download image
+    const slideElement = document.getElementById('capture-slide');
+    html2canvas(slideElement, { scale: 2 }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `Class-${document.getElementById('setup-class').value}-Group-${document.getElementById('setup-group').value}-Travel-Plan.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    // 2. Submit data to Google Sheets
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbz4IPt4p6PTmu_zV9Pl_YHeL-yHaClhwCRVPWy2D-UY479Zxxpsoy_b6YPP-g4IOik/exec';
+    
+    let partnersList = [];
+    for (let i = 1; i <= travelerCount; i++) {
+      partnersList.push(getPartnerLabel(i));
+    }
+
+    const payload = {
+      classNum: document.getElementById('setup-class').value,
+      groupNum: document.getElementById('setup-group').value,
+      style: tripStyleLabel,
+      continent: selectedContinent,
+      partners: partnersList.join(', '),
+      grandTotal: grandTotalVal,
+      status: isPassed ? 'PASSED' : 'OVER BUDGET'
+    };
+
+    fetch(scriptURL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(() => {
+      alert("Slide saved as image & data successfully submitted to your teacher's spreadsheet! 🎉");
+    }).catch(error => {
+      console.error('Error submitting data:', error);
+      alert("Slide saved as image, but there was an error connecting to the spreadsheet.");
+    });
+  }
+</script>
+</body>
+</html>
