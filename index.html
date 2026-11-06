@@ -98,18 +98,18 @@
 
     /* Results Gauge & Submission Card */
     .banner-win { background: #fff8e1; border: 2px dashed var(--accent); padding: 15px; border-radius: 12px; text-align: center; font-size: 1.2rem; }
-    .budget-status { font-size: 0.85rem; font-weight: bold; padding: 6px 12px; border-radius: 6px; text-align: center; }
+    .budget-status { font-size: 0.8rem; font-weight: bold; padding: 4px 10px; border-radius: 6px; text-align: center; }
     .status-pass { background: #d4edda; color: #155724; }
     .status-fail { background: #f8d7da; color: #721c24; }
 
-    /* Landscape Presentation Slide Design (Step 11) - Widescreen & Visually Stunning */
+    /* Landscape Presentation Slide Design (Step 11) - Optimized for Max Picture Height */
     .presentation-slide {
       width: 100%;
       aspect-ratio: 16 / 9;
       background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
       border: 4px solid var(--primary);
       border-radius: 16px;
-      padding: 18px 22px;
+      padding: 12px 18px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -122,31 +122,32 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 2px solid #cbd5e1;
-      padding-bottom: 8px;
+      padding-bottom: 6px;
+      margin-bottom: 4px;
     }
-    .slide-header h2 { margin: 0; font-size: 1.3rem; color: #1b5e20; }
-    .slide-badges { display: flex; gap: 8px; font-size: 0.75rem; font-weight: bold; }
-    .slide-badge { background: #e2e8f0; padding: 4px 8px; border-radius: 6px; color: #334155; }
+    .slide-header h2 { margin: 0; font-size: 1.2rem; color: #1b5e20; }
+    .slide-badges { display: flex; gap: 6px; font-size: 0.75rem; font-weight: bold; }
+    .slide-badge { background: #e2e8f0; padding: 3px 6px; border-radius: 6px; color: #334155; }
     
     /* Main Destination Visual Grid */
     .slide-destinations-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-      gap: 12px;
-      margin: 8px 0;
+      gap: 10px;
+      margin: 2px 0;
     }
     .slide-dest-card {
       background: #ffffff;
-      border-radius: 12px;
+      border-radius: 10px;
       overflow: hidden;
       border: 2px solid #cbd5e1;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
       display: flex;
       flex-direction: column;
     }
     .slide-dest-img-container {
       width: 100%;
-      height: 140px;
+      height: 170px; /* Maximized height for gorgeous display */
       background: #e2e8f0;
       position: relative;
     }
@@ -156,40 +157,41 @@
       object-fit: cover;
     }
     .slide-dest-info {
-      padding: 8px 10px;
+      padding: 6px 8px;
       background: #fff;
       flex-grow: 1;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-    .slide-dest-title { font-size: 0.85rem; font-weight: bold; color: #1e293b; }
-    .slide-dest-partner { font-size: 0.75rem; color: var(--primary); font-weight: bold; margin-bottom: 2px; }
-    .slide-dest-fare { font-size: 0.75rem; color: #047857; font-weight: bold; margin-top: 4px; }
+    .slide-dest-title { font-size: 0.8rem; font-weight: bold; color: #1e293b; }
+    .slide-dest-partner { font-size: 0.7rem; color: var(--primary); font-weight: bold; }
+    .slide-dest-fare { font-size: 0.7rem; color: #047857; font-weight: bold; margin-top: 2px; }
 
     /* Bottom Logistics & Footer Section */
     .slide-bottom-section {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
       background: #ffffff;
-      border-radius: 10px;
-      padding: 8px 12px;
+      border-radius: 8px;
+      padding: 6px 10px;
       border: 1px solid #cbd5e1;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #334155;
+      margin-top: 2px;
     }
-    .slide-bottom-col h5 { margin: 0 0 4px 0; color: #2e7d32; font-size: 0.8rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px; }
+    .slide-bottom-col h5 { margin: 0 0 2px 0; color: #2e7d32; font-size: 0.75rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1px; }
 
     .slide-footer {
       background: #e8f5e9;
-      border-radius: 8px;
-      padding: 8px 14px;
+      border-radius: 6px;
+      padding: 6px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border: 1px solid #c8e6c9;
-      margin-top: 4px;
+      margin-top: 2px;
     }
   </style>
 </head>
@@ -389,10 +391,7 @@
     <!-- Landscape 16:9 Slide Container for Capture -->
     <div class="presentation-slide" id="capture-slide">
       <div class="slide-header">
-        <div>
-          <h2><span id="slide-class-group-header">Class 501 | Group 1</span> ✈️ World Travel Plan</h2>
-          <span style="font-size:0.7rem; color:#64748b;">世界旅行計畫成果發表</span>
-        </div>
+        <h2><span id="slide-class-group-header">Class 501 | Group 1</span> ✈️ World Travel Plan</h2>
         <div class="slide-badges">
           <span class="slide-badge" id="slide-style-badge">🎒 Style</span>
           <span class="slide-badge" id="slide-continent-badge">🌏 Continent</span>
@@ -419,11 +418,11 @@
       <!-- Slide Footer / Budget Status -->
       <div class="slide-footer">
         <div>
-          <span style="font-size:0.75rem; color:#334155;">Allowed Budget: <b id="slide-budget-limit">$0</b></span>
-          <span style="font-size:0.75rem; color:#334155; margin-left: 10px;">Total Cost: <b id="slide-grand-total" style="color:#1b5e20;">$0</b></span>
-          <span style="font-size:0.75rem; color:#1b5e20; margin-left: 10px;">🏆 <b>Winning Fare Used:</b> <span id="slide-winning-fare-text">$0</span> / person</span>
+          <span style="font-size:0.7rem; color:#334155;">Allowed Budget: <b id="slide-budget-limit">$0</b></span>
+          <span style="font-size:0.7rem; color:#334155; margin-left: 8px;">Total Cost: <b id="slide-grand-total" style="color:#1b5e20;">$0</b></span>
+          <span style="font-size:0.7rem; color:#1b5e20; margin-left: 8px;">🏆 <b>Winning Fare:</b> <span id="slide-winning-fare-text">$0</span> / person</span>
         </div>
-        <div id="slide-status-box" style="font-size: 0.75rem; font-weight: bold; padding: 3px 8px; border-radius: 6px;"></div>
+        <div id="slide-status-box" style="font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 4px;"></div>
       </div>
     </div>
   </div>
