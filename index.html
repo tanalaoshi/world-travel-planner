@@ -98,7 +98,7 @@
 
     /* Results Gauge & Submission Card */
     .banner-win { background: #fff8e1; border: 2px dashed var(--accent); padding: 15px; border-radius: 12px; text-align: center; font-size: 1.2rem; }
-    .budget-status { font-size: 1.1rem; font-weight: bold; padding: 10px; border-radius: 8px; text-align: center; }
+    .budget-status { font-size: 1rem; font-weight: bold; padding: 6px 12px; border-radius: 6px; text-align: center; }
     .status-pass { background: #d4edda; color: #155724; }
     .status-fail { background: #f8d7da; color: #721c24; }
 
@@ -109,7 +109,7 @@
       background: linear-gradient(135deg, #f9fbfd 0%, #edf2f7 100%);
       border: 4px solid var(--primary);
       border-radius: 16px;
-      padding: 20px;
+      padding: 16px 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -122,17 +122,17 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 2px solid #cbd5e1;
-      padding-bottom: 8px;
+      padding-bottom: 6px;
     }
-    .slide-header h2 { margin: 0; font-size: 1.3rem; color: #1b5e20; }
-    .slide-badges { display: flex; gap: 8px; font-size: 0.8rem; font-weight: bold; }
-    .slide-badge { background: #e2e8f0; padding: 4px 8px; border-radius: 6px; color: #334155; }
+    .slide-header h2 { margin: 0; font-size: 1.2rem; color: #1b5e20; }
+    .slide-badges { display: flex; gap: 6px; font-size: 0.75rem; font-weight: bold; }
+    .slide-badge { background: #e2e8f0; padding: 3px 6px; border-radius: 6px; color: #334155; }
     
     .slide-body {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.2fr 0.8fr;
       gap: 12px;
-      margin: 8px 0;
+      margin: 6px 0;
     }
     .slide-card {
       background: #ffffff;
@@ -141,13 +141,13 @@
       border: 1px solid #e2e8f0;
       box-shadow: 0 2px 5px rgba(0,0,0,0.03);
     }
-    .slide-card h4 { margin: 0 0 6px 0; font-size: 0.9rem; color: #2e7d32; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
-    .slide-card-content { font-size: 0.8rem; color: #475569; line-height: 1.3; }
+    .slide-card h4 { margin: 0 0 6px 0; font-size: 0.85rem; color: #2e7d32; border-bottom: 1px solid #f1f5f9; padding-bottom: 3px; }
+    .slide-card-content { font-size: 0.75rem; color: #475569; line-height: 1.3; }
 
     .slide-footer {
       background: #e8f5e9;
       border-radius: 8px;
-      padding: 8px 12px;
+      padding: 6px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -353,7 +353,7 @@
       <div class="slide-header">
         <div>
           <h2><span id="slide-class-group-header">Class 501 | Group 1</span> ✈️ World Travel Plan</h2>
-          <span style="font-size:0.75rem; color:#64748b;">世界旅行計畫成果發表</span>
+          <span style="font-size:0.7rem; color:#64748b;">世界旅行計畫成果發表</span>
         </div>
         <div class="slide-badges">
           <span class="slide-badge" id="slide-style-badge">🎒 Style</span>
@@ -364,7 +364,7 @@
 
       <div class="slide-body">
         <div class="slide-card">
-          <h4>📍 Destinations & Airfares / 景點與機票</h4>
+          <h4>📍 Selected Destinations & Pictures / 主要景點與圖片</h4>
           <div class="slide-card-content" id="slide-destinations-list"></div>
         </div>
 
@@ -380,10 +380,10 @@
 
       <div class="slide-footer">
         <div>
-          <span style="font-size:0.8rem; color:#334155;">Allowed Budget: <b id="slide-budget-limit">$0</b></span>
-          <span style="font-size:0.8rem; color:#334155; margin-left: 10px;">Total Cost: <b id="slide-grand-total" style="color:#1b5e20;">$0</b></span>
+          <span style="font-size:0.75rem; color:#334155;">Allowed Budget: <b id="slide-budget-limit">$0</b></span>
+          <span style="font-size:0.75rem; color:#334155; margin-left: 8px;">Total Cost: <b id="slide-grand-total" style="color:#1b5e20;">$0</b></span>
         </div>
-        <div id="slide-status-box" style="font-size: 0.8rem; font-weight: bold; padding: 3px 8px; border-radius: 6px;"></div>
+        <div id="slide-status-box" style="font-size: 0.75rem; font-weight: bold; padding: 3px 8px; border-radius: 6px;"></div>
       </div>
     </div>
   </div>
@@ -709,17 +709,31 @@
     document.getElementById('slide-continent-badge').innerText = `${continentEmoji} ${selectedContinent}`;
     document.getElementById('slide-days-badge').innerText = `📅 ${days} Days`;
 
-    // Destinations & Airfares list with numbers included
+    // Destinations & Airfares list with pictures included
     let destHtml = "";
+    const formattedContinent = selectedContinent.replace(/\s+/g, '_');
+
     for (let i = 1; i <= travelerCount; i++) {
       const pName = getPartnerLabel(i);
       const destName = document.getElementById(`dest-t${i}`) ? document.getElementById(`dest-t${i}`).value : 'N/A';
       const matchObj = list.find(d => d.name === destName);
       const destNumStr = matchObj ? `(${matchObj.num}) ` : '';
       const fareVal = document.getElementById(`fare-t${i}`) ? document.getElementById(`fare-t${i}`).value : '0';
-      destHtml += `<div>• <b>${pName}:</b> ${destNumStr}${destName} ($${parseInt(fareVal).toLocaleString()})</div>`;
+      
+      // Image file path matching naming convention (e.g., images/Asia1.jpg, images/North_America2.jpg)
+      const imgPath = matchObj ? `images/${formattedContinent}${matchObj.num}.jpg` : '';
+
+      destHtml += `
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; background: #f8fafc; padding: 4px 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
+          <img src="${imgPath}" alt="${destName}" style="width: 42px; height: 42px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;" onerror="this.style.display='none'">
+          <div style="flex-grow: 1; font-size: 0.75rem;">
+            <div><b>${pName}:</b> ${destNumStr}${destName}</div>
+            <div style="color: #166534;">Fare: $${parseInt(fareVal).toLocaleString()} NTD</div>
+          </div>
+        </div>
+      `;
     }
-    destHtml += `<div style="margin-top:4px; color:#2e7d32;">🏆 <b>Winning Fare Used:</b> $${winningAirfare.toLocaleString()} / person</div>`;
+    destHtml += `<div style="margin-top:2px; color:#2e7d32; font-size: 0.75rem;">🏆 <b>Winning Fare Used:</b> $${winningAirfare.toLocaleString()} / person</div>`;
     document.getElementById('slide-destinations-list').innerHTML = destHtml;
 
     // Secrets list
@@ -755,7 +769,7 @@
   function saveImageAndSubmit() {
     // 1. Download image
     const slideElement = document.getElementById('capture-slide');
-    html2canvas(slideElement, { scale: 2 }).then(canvas => {
+    html2canvas(slideElement, { scale: 2, useCORS: true }).then(canvas => {
       const link = document.createElement('a');
       link.download = `Class-${document.getElementById('setup-class').value}-Group-${document.getElementById('setup-group').value}-Travel-Plan.png`;
       link.href = canvas.toDataURL('image/png');
